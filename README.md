@@ -6,14 +6,13 @@ For the implementation we have been using the StarCoder agent, which is a large 
 Streamlit has been used for the Frontend.
 
 ## How to use:
-Open a new Google colab notebook. https://colab.research.google.com/?utm_source=scs-index
-Copy in the code that you find int this repo, folder Agent/Streamlit_integration_LanguageWhisperer.ipynb
+Open a new Google colab notebook. https://colab.research.google.com/?utm_source=scs-index .Copy in the code that you find in the folder Agent/Streamlit_integration_LanguageWhisperer.ipynb
+Run cell 1-3. If you don’t have a HuggingFace account yet, create one and copy your Token into the input field shown after a while in cell 3. Run cells 4-7. 
+In cell 7, open the URL once that it is shown.
+At the left side of the Google colab notebook, click on the folder icon. Open the file log.txt, copy the ip of “external url” without port and chars e.g. 35.229.184.198. Paste it in the input field of the URL you opened and click on “click to submit”.
 
-Run cell 1-3. If you dont have a HuggingFace account yet, create one and copy your Token into the input field shown after a while in cell 3.
-Run cells 4-7.
-In cell 7, copy the URL once that its shown.
+You can then upload a picture. The caption will get shown after a while. Afterwards, choose a language to translate the caption. Then in the input section “Enter a word” you can research about a certain word in Wikipedia. The text will be shown below the input section after a moment.
 
-At the left side of the Google colab notebook, click on the folder icon. Open the file log.txt, copy ip in external url without port and chars e.g. 35.229.184.198. Paste it in the input field of the URL you opened and click on “click to submit”. 
 
 
 
