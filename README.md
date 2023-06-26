@@ -5,6 +5,9 @@ You can then translate the caption into a language of your choice. Afterwards yo
 For the implementation we have been using the StarCoder agent, which is a large language model (LLM) (  https://huggingface.co/docs/transformers/main_classes/agent ) that provides a natural language API on top of transformers. The Wiki Searcher has been implemented with the help of BeautifulSoup, a Python library for pulling data out of HTML and XML files.
 Streamlit has been used for the Frontend.
 
+## Demo video
+https://youtu.be/zaYRAKcPHOk
+
 ## How to use:
 Open a new Google colab notebook. https://colab.research.google.com/?utm_source=scs-index .Copy in the code that you find in the folder Agent/Streamlit_integration_LanguageWhisperer.ipynb
 Run cell 1-3. If you don’t have a HuggingFace account yet, create one and copy your Token into the input field shown after a while in cell 3. Run cells 4-7. 
