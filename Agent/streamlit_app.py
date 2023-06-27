@@ -1,5 +1,16 @@
 import IPython
 import soundfile as sf
+import streamlit as st
+#from transformers import HfAgent
+from PIL import Image
+import IPython
+import string
+from huggingface_hub import notebook_login
+from gtts import gTTS
+from IPython.display import Audio
+import langcodes
+from transformers import Tool
+from transformers.tools import HfAgent
 
 def play_audio(audio):
     sf.write("speech_converted.wav", audio.numpy(), samplerate=16000)
@@ -27,17 +38,7 @@ if agent_name == "OpenAI (API Key)":
     print("OpenAI is initialized 💪")
 
 
-import streamlit as st
-#from transformers import HfAgent
-from PIL import Image
-import IPython
-import string
-from huggingface_hub import notebook_login
-from gtts import gTTS
-from IPython.display import Audio
-import langcodes
-from transformers import Tool
-from transformers.tools import HfAgent
+
 
 uploaded_photos=st.file_uploader("Choose a file")
 
