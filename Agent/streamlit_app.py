@@ -12,89 +12,13 @@ from transformers.tools import HfAgent
 import IPython
 import soundfile as sf
 import getpass
+import requests
+from bs4 import BeautifulSoup
 
 token = st.secrets["hugging_face_token"]
 login(token)
 
-#@title Agent init
-agent_name = "StarCoder (HF Token)" #@param ["StarCoder (HF Token)", "OpenAssistant (HF Token)", "OpenAI (API Key)"]
-
-
-if agent_name == "StarCoder (HF Token)":
-    from transformers.tools import HfAgent
-    agent = HfAgent("https://api-inference.huggingface.co/models/bigcode/starcoder")
-    print("StarCoder is initialized 💪")
-elif agent_name == "OpenAssistant (HF Token)":
-    from transformers.tools import HfAgent
-    agent = HfAgent(url_endpoint="https://api-inference.huggingface.co/models/OpenAssistant/oasst-sft-4-pythia-12b-epoch-3.5")
-    print("OpenAssistant is initialized 💪")
-if agent_name == "OpenAI (API Key)":
-    from transformers.tools import OpenAiAgent
-    pswd = getpass.getpass('OpenAI API key:')
-    agent = OpenAiAgent(model="text-davinci-003", api_key=pswd)
-    print("OpenAI is initialized 💪")
-
-
-
-
-def play_audio(audio):
-    sf.write("speech_converted.wav", audio.numpy(), samplerate=16000)
-    return IPython.display.Audio("speech_converted.wav")
-uploaded_photos=st.file_uploader("Choose a file")
-
-def get_session_state():
-    return st.session_state
-
-# Initialize session state
-session_state = get_session_state()
-if 'what_on_my_photo' not in session_state:
-    session_state.what_on_my_photo = None
-if 'translated_caption' not in session_state:
-    session_state.translated_caption = None
-
-
-image=None
-what_on_my_photo=None
-
-if (uploaded_photos!=None):
-    image = Image.open(uploaded_photos)
-
-if (image!=None):
-    st.image(image)
-
-agent = HfAgent("https://api-inference.huggingface.co/models/bigcode/starcoder")
-
-if (image!=None):
-  what_on_my_photo = agent.run("Generate a caption for the 'image'", image=image)
-  session_state.what_on_my_photo = what_on_my_photo
-
-if (what_on_my_photo!=None):
-  st.write(what_on_my_photo)
-
-option = st.selectbox('Select Language to translate to',('Spanish', 'German', 'French', 'Italian', 'Japanese',
-                               'Acehnese', 'Afrikaans', 'Akan', 'Amharic', 'Armenian', 'Assamese', 'Asturian', 'Awadhi', 'Aymara', 'South Azerbaijani', 'North Azerbaijani',
-                               'Bashkir', 'Bambara', 'Balinese', 'Banjar', 'Basque', 'Belarusian', 'Bemba', 'Bengali', 'Bhojpuri', 'Bosnian', 'Buginese', 'Bulgarian',
-                               'Catalan', 'Cebuano', 'Central Kurdish', 'Chhattisgarhi', 'Chokwe', 'Crimean Tatar', 'Croatian', 'Czech', 'Danish', 'Dholuo', 'Dinka', 'Dyula',
-                               'Dzongkha', 'Esperanto', 'Estonian',  'Ewe', 'Faroese', 'Fijian', 'Finnish', 'Fon', 'Friulian', 'Fulfulde',
-                               'Ganda', 'Galician', 'Guarani', 'Gujarati', 'Georgian', 'Greek', 'Haitian Creole', 'Hausa', 'Hebrew', 'Hindi', 'Hungarian', 'Iranian Persian',
-                               'Icelandic', 'Igobo', 'IIocano', 'Indonesian', 'Irish', 'Javanese',  'Kabyle', 'Kachin', 'Kamba', 'Kannada', 'Kashmiri',
-                               'Kanuri', 'Kazakh', 'Kabiye', 'Khmer', 'Kikuyu', 'Kinyarwanda', 'Kimbundu', 'Konga', 'Korean', 'Kurdish', 'Kyrgyz',
-                               'Lao', 'Latvian', 'Ligurian', 'Limburgish', 'Lingala', 'Lithuanian', 'Lombard', 'Latgalian', 'Luxembourgish', 'Luba-Kasai', 'Mizo',
-                               'Tibetan', 'Thai', 'Scottish Gaelic', 'Swedish', 'Welsh'))
-
-translate="Can you tranlate \'caption\' to" + option
-language_code = str(langcodes.find(option))
-translated_caption=None
-
-if(session_state.what_on_my_photo!=None):
-  if st.button('Translate'):
-    translated_caption = agent.run(translate, caption=what_on_my_photo)
-    session_state.translated_caption = translated_caption
-
-if(session_state.translated_caption!=None):
-    st.subheader(session_state.translated_caption)
-
-
+# Adding tools to Agent
 #Text voicing
 
 def text_to_speech(text, lang):
@@ -116,9 +40,6 @@ class VoicingInDifferentLanguages(Tool):
 
 
 #WIKI SEARCHER
-import requests
-from bs4 import BeautifulSoup
-
 def get_word_page_url(word):
     # Define the base URL for the Wiktionary API
     base_url = "https://en.wiktionary.org/w/api.php"
@@ -172,7 +93,6 @@ def get_word_page_content(word):
 
 
 # Custom WIKI searcher tool
-
 class SearchWordInWikiDictionary(Tool):
     name = "wiki_dictionary_searcher"
     description = ("This is a tool that searches a word meaning in Wiki dictionary. It takes a word as input, and returns the content of a word page.")
@@ -182,13 +102,67 @@ class SearchWordInWikiDictionary(Tool):
 
     def __call__(self, word):
         return get_word_page_content(word)
-
-
-# Adding tools to Agent
-
 tool = SearchWordInWikiDictionary()
-vocing_tool = VoicingInDifferentLanguages()
-agent = HfAgent("https://api-inference.huggingface.co/models/bigcode/starcoder", additional_tools=[tool, vocing_tool])
+voicing_tool = VoicingInDifferentLanguages()
+
+agent = HfAgent("https://api-inference.huggingface.co/models/bigcode/starcoder", additional_tools=[tool, voicing_tool])
+
+
+def play_audio(audio):
+    sf.write("speech_converted.wav", audio.numpy(), samplerate=16000)
+    return IPython.display.Audio("speech_converted.wav")
+uploaded_photos=st.file_uploader("Choose a file")
+
+def get_session_state():
+    return st.session_state
+
+# Initialize session state
+session_state = get_session_state()
+if 'what_on_my_photo' not in session_state:
+    session_state.what_on_my_photo = None
+if 'translated_caption' not in session_state:
+    session_state.translated_caption = None
+
+
+image=None
+what_on_my_photo=None
+
+if (uploaded_photos!=None):
+    image = Image.open(uploaded_photos)
+
+if (image!=None):
+    st.image(image)
+
+if (image!=None):
+  what_on_my_photo = agent.run("Generate a caption for the 'image'", image=image)
+  session_state.what_on_my_photo = what_on_my_photo
+
+if (what_on_my_photo!=None):
+  st.write(what_on_my_photo)
+
+option = st.selectbox('Select Language to translate to',('Spanish', 'German', 'French', 'Italian', 'Japanese',
+                               'Acehnese', 'Afrikaans', 'Akan', 'Amharic', 'Armenian', 'Assamese', 'Asturian', 'Awadhi', 'Aymara', 'South Azerbaijani', 'North Azerbaijani',
+                               'Bashkir', 'Bambara', 'Balinese', 'Banjar', 'Basque', 'Belarusian', 'Bemba', 'Bengali', 'Bhojpuri', 'Bosnian', 'Buginese', 'Bulgarian',
+                               'Catalan', 'Cebuano', 'Central Kurdish', 'Chhattisgarhi', 'Chokwe', 'Crimean Tatar', 'Croatian', 'Czech', 'Danish', 'Dholuo', 'Dinka', 'Dyula',
+                               'Dzongkha', 'Esperanto', 'Estonian',  'Ewe', 'Faroese', 'Fijian', 'Finnish', 'Fon', 'Friulian', 'Fulfulde',
+                               'Ganda', 'Galician', 'Guarani', 'Gujarati', 'Georgian', 'Greek', 'Haitian Creole', 'Hausa', 'Hebrew', 'Hindi', 'Hungarian', 'Iranian Persian',
+                               'Icelandic', 'Igobo', 'IIocano', 'Indonesian', 'Irish', 'Javanese',  'Kabyle', 'Kachin', 'Kamba', 'Kannada', 'Kashmiri',
+                               'Kanuri', 'Kazakh', 'Kabiye', 'Khmer', 'Kikuyu', 'Kinyarwanda', 'Kimbundu', 'Konga', 'Korean', 'Kurdish', 'Kyrgyz',
+                               'Lao', 'Latvian', 'Ligurian', 'Limburgish', 'Lingala', 'Lithuanian', 'Lombard', 'Latgalian', 'Luxembourgish', 'Luba-Kasai', 'Mizo',
+                               'Tibetan', 'Thai', 'Scottish Gaelic', 'Swedish', 'Welsh'))
+
+translate="Can you tranlate \'caption\' to" + option
+language_code = str(langcodes.find(option))
+translated_caption=None
+
+if(session_state.what_on_my_photo!=None):
+  if st.button('Translate'):
+    translated_caption = agent.run(translate, caption=what_on_my_photo)
+    session_state.translated_caption = translated_caption
+
+if(session_state.translated_caption!=None):
+    st.subheader(session_state.translated_caption)
+
 
 
 if(session_state.translated_caption!=None):
