@@ -1,27 +1,24 @@
-import IPython
-import soundfile as sf
 import streamlit as st
 #from transformers import HfAgent
 from PIL import Image
 import IPython
 import string
-from huggingface_hub import notebook_login
+from huggingface_hub import login
 from gtts import gTTS
 from IPython.display import Audio
 import langcodes
 from transformers import Tool
 from transformers.tools import HfAgent
+import IPython
+import soundfile as sf
+import getpass
 
-def play_audio(audio):
-    sf.write("speech_converted.wav", audio.numpy(), samplerate=16000)
-    return IPython.display.Audio("speech_converted.wav")
+token = st.secrets["hugging_face_token"]
+login(token)
 
-from huggingface_hub import notebook_login
-notebook_login()
-
+#@title Agent init
 agent_name = "StarCoder (HF Token)" #@param ["StarCoder (HF Token)", "OpenAssistant (HF Token)", "OpenAI (API Key)"]
 
-import getpass
 
 if agent_name == "StarCoder (HF Token)":
     from transformers.tools import HfAgent
@@ -40,6 +37,9 @@ if agent_name == "OpenAI (API Key)":
 
 
 
+def play_audio(audio):
+    sf.write("speech_converted.wav", audio.numpy(), samplerate=16000)
+    return IPython.display.Audio("speech_converted.wav")
 uploaded_photos=st.file_uploader("Choose a file")
 
 def get_session_state():
@@ -194,9 +194,10 @@ agent = HfAgent("https://api-inference.huggingface.co/models/bigcode/starcoder",
 if(session_state.translated_caption!=None):
     column = st.columns(1)
     if column[0].button('Get pronunciation'):
-        voicing = agent.run("Get voicing of 'text' in 'lang'",text=session_state.translated_caption, lang=language_code)
+        voicing = agent.run("Get voicing of 'text' in 'lang'",
+                             text=session_state.translated_caption, lang=language_code)
         if(voicing!=None):
-          st.write(voicing)
+            st.write(voicing)
 
 
 words = None
